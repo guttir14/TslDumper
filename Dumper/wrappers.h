@@ -4,7 +4,6 @@
 
 namespace fs = std::filesystem;
 
-
 class File {
 private:
 	FILE* file;
@@ -29,7 +28,6 @@ public:
 	// Gets string out of array unit
 	void String(char* buf, uint16 len) const;
 	operator bool() const { return object != nullptr; }
-
 };
 
 class UE_FName {
@@ -243,7 +241,6 @@ public:
 	static UE_UClass StaticClass();
 };
 
-
 class UE_UInt32Property : public UE_UProperty
 {
 public:
@@ -251,7 +248,6 @@ public:
 	std::string GetType() const;
 	static UE_UClass StaticClass();
 };
-
 
 class UE_UInt64Property : public UE_UProperty
 {
@@ -325,7 +321,6 @@ public:
 	UE_UClass GetPropertyClass() const;
 	static UE_UClass StaticClass();
 };
-
 
 class UE_ObjectProperty : public UE_ObjectPropertyBase
 {
@@ -466,7 +461,6 @@ public:
 	static UE_UClass StaticClass();
 };
 
-
 template<typename T>
 bool UE_UObject::IsA() const
 {
@@ -522,7 +516,7 @@ private:
 	std::vector<Struct> Structures;
 	std::vector<Enum> Enums;
 private:
-	static void GenerateBitPadding(std::vector<Member>* members, int32* offset, uint8* bitOffset);
+	static void GenerateBitPadding(std::vector<Member>* members, int32 offset, uint8 bitOffset, uint8 size);
 	static void GeneratePadding(std::vector<Member>* members, int32* minOffset, uint8* bitOffset, int32 maxOffset);
 	static void GenerateStruct(UE_UStruct object, std::vector<Struct>& arr);
 	static void GenerateEnum(UE_UEnum object, std::vector<Enum>& arr);

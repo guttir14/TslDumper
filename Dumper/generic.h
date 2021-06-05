@@ -19,7 +19,6 @@ struct TNameEntryArray
 	void Dump(std::function<void(std::string_view name, uint32 id)> callback) const;
 };
 
-
 struct TUObjectArray
 {
 	uint8* Objects;
@@ -31,15 +30,14 @@ struct TUObjectArray
 	class UE_UClass FindObject(const std::string& name) const;
 };
 
-typedef uint8*(__fastcall* Decrypt64)(uint64);
+typedef uint8* (__fastcall* Decrypt64)(uint64);
 extern Decrypt64 DecryptClass;
 extern Decrypt64 DecryptOuter;
 
 typedef uint32(__fastcall* Decrypt32)(uint32);
 extern Decrypt32 DecryptNameIndex;
 extern Decrypt32 DecryptNameNumber;
-extern Decrypt32 DecryptInternalIndex ;
+extern Decrypt32 DecryptInternalIndex;
 
 extern TNameEntryArray GlobalNames;
 extern TUObjectArray ObjObjects;
-

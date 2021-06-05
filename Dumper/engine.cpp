@@ -6,11 +6,9 @@
 Offsets defs;
 
 bool TlsInit(std::vector<std::pair<byte*, byte*>>* sections) {
-
 	void* decryptPtrAddr = nullptr;
 	void* globalNamesPtrPtrAddr = nullptr;
 	void* objObjectsAddr = nullptr;
-	
 
 	{
 		uint8 decryptPtrSig[] = { 0xFF, 0x15, 0x00, 0x00, 0x00, 0x00, 0xEB, 0x3F };
@@ -20,7 +18,7 @@ bool TlsInit(std::vector<std::pair<byte*, byte*>>* sections) {
 		char flags = 0;
 		for (int i = 0; i < sections->size(); i++) {
 			auto& info = sections->at(i);
-			if (!(flags & 1)) { decryptPtrAddr = FindPointer(info.first, info.second, decryptPtrSig, sizeof(decryptPtrSig)); flags |= 1;}
+			if (!(flags & 1)) { decryptPtrAddr = FindPointer(info.first, info.second, decryptPtrSig, sizeof(decryptPtrSig)); flags |= 1; }
 			if (!(flags & 2)) { globalNamesPtrPtrAddr = FindPointer(info.first, info.second, namesSig, sizeof(namesSig)); flags |= 2; }
 			if (!(flags & 4)) { objObjectsAddr = FindPointer(info.first, info.second, objSig, sizeof(objSig), 0x18); flags |= 4; }
 			if (flags & 7) { goto success; }
@@ -29,8 +27,8 @@ bool TlsInit(std::vector<std::pair<byte*, byte*>>* sections) {
 		return false;
 	}
 
-	success:
-	
+success:
+
 	DecryptNameIndex = [](uint32_t v25) {
 		v25 = _rotr(v25 ^ 0x1276F7AB, 4);
 		return v25 ^ (v25 << 16) ^ 0xAD932E4;
@@ -41,12 +39,11 @@ bool TlsInit(std::vector<std::pair<byte*, byte*>>* sections) {
 		return v39 ^ (v39 << 16) ^ 0xD90A4EE8;
 	};
 
-
 	DecryptInternalIndex = [](uint32 a1) {
 		auto v37 = _rotl(a1 ^ 0xF7AB1276, 12);
 		return v37 ^ (v37 << 16) ^ 0xAD9383D;
 	};
-	
+
 	DecryptClass = [](uint64_t address) {
 		auto v120 = _rotr64(address ^ 0xB2E43838241BE450, 14);
 		return (byte*)(v120 ^ (v120 << 32) ^ 0xAD550BA6BAFE19D1);
@@ -81,7 +78,6 @@ bool TlsInit(std::vector<std::pair<byte*, byte*>>* sections) {
 			uint64_t NumElements = 0;
 			uint64_t NumChunks = 0;
 		} data;
-
 
 		auto v3 = decrypt(Read<uint64>((void*)v2));
 		auto v4 = decrypt(Read<uint64>((void*)v3));
@@ -123,7 +119,7 @@ bool EngineInit(std::string game, std::vector<std::pair<byte*, byte*>>* sections
 			int b;
 		} val32;
 	} name;
-	name.val32 = {'GlsT', '\0ema' };
+	name.val32 = { 'GlsT', '\0ema' };
 
 	if (*(uint64*)game.data() != name.val64 || !TlsInit(sections)) return false;
 	return true;

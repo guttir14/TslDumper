@@ -3,7 +3,6 @@
 #include "engine.h"
 #include <fmt/core.h>
 
-
 std::string UE_FNameEntry::String() const
 {
 	char buf[1024]{};
@@ -22,14 +21,14 @@ std::string UE_FName::GetName() const
 	if (enc && DecryptNameIndex) { index = DecryptNameIndex(index); }
 	auto entry = UE_FNameEntry(GlobalNames.GetEntry(index));
 	auto name = entry.String();
-	
+
 	uint32 number = Read<uint32>(object + 4);
 	if (enc && DecryptNameNumber) { number = DecryptNameNumber(number); }
 	if (number > 0)
 	{
 		name += '_' + std::to_string(number);
 	}
-	
+
 	auto pos = name.rfind('/');
 	if (pos != std::string::npos)
 	{
@@ -245,10 +244,9 @@ int32 UE_UProperty::GetSize() const
 {
 	return Read<int32>(object + defs.UProperty.ElementSize);
 }
- 
+
 std::pair<PropertyType, std::string> UE_UProperty::GetType() const
 {
-
 	if (IsA<UE_ArrayProperty>())
 	{
 		return { PropertyType::ArrayProperty, Cast<UE_ArrayProperty>().GetType() };
@@ -390,7 +388,6 @@ UE_UClass UE_UInt16Property::StaticClass()
 	return obj;
 }
 
-
 std::string UE_UInt32Property::GetType() const
 {
 	return "uint32";
@@ -423,8 +420,6 @@ UE_UClass UE_Int8Property::StaticClass()
 	static auto obj = ObjObjects.FindObject("Class CoreUObject.Int8Property");
 	return obj;
 }
-
-
 
 std::string UE_Int16Property::GetType() const
 {
@@ -707,22 +702,22 @@ UE_UClass UE_MulticastDelegateProperty::StaticClass()
 	return obj;
 }
 
-void UE_UPackage::GenerateBitPadding(std::vector<Member>* members, int32* offset, uint8* bitOffset)
+void UE_UPackage::GenerateBitPadding(std::vector<Member>* members, int32 offset, uint8 bitOffset, uint8 size)
 {
 	Member padding;
-	padding.Name = fmt::format("char pad_{:0X}_{} : {}", *offset, *bitOffset, 8 - *bitOffset);
-	padding.Offset = *offset;
+	padding.Name = fmt::format("char pad_{:0X}_{} : {}", offset, bitOffset, size);
+	padding.Offset = offset;
 	padding.Size = 1;
 	members->push_back(padding);
-	*offset += 1;
-	*bitOffset = 0;
 }
 
 void UE_UPackage::GeneratePadding(std::vector<Member>* members, int32* offset, uint8* bitOffset, int32 maxOffset)
 {
 	if (*bitOffset)
 	{
-		if (*bitOffset < 8) { UE_UPackage::GenerateBitPadding(members, offset, bitOffset); }
+		if (*bitOffset < 8) { UE_UPackage::GenerateBitPadding(members, *offset, *bitOffset, 8 - *bitOffset); }
+		*bitOffset = 0;
+		*offset += 1;
 	}
 	if (maxOffset > *offset)
 	{
@@ -820,7 +815,7 @@ void UE_UPackage::GenerateStruct(UE_UStruct object, std::vector<Struct>& arr)
 				while (mask & 1) { mask >>= 1; ones++; }
 				if (zeros > bitOffset)
 				{
-					UE_UPackage::GenerateBitPadding(&s.Members, &offset, &bitOffset);
+					UE_UPackage::GenerateBitPadding(&s.Members, offset, bitOffset, zeros - bitOffset);
 					bitOffset = zeros;
 				}
 				m.Name += fmt::format(" : {}", ones);
@@ -835,7 +830,7 @@ void UE_UPackage::GenerateStruct(UE_UStruct object, std::vector<Struct>& arr)
 
 				offset += m.Size;
 			}
-			
+
 			s.Members.push_back(m);
 		}
 	}
@@ -856,10 +851,9 @@ void UE_UPackage::GenerateEnum(UE_UEnum object, std::vector<Enum>& arr)
 	auto names = object.GetNames();
 	for (auto i = 0ull; i < names.Count; i++)
 	{
-		
 		auto name = UE_FName(names.Data + i * 0x10, false);
 		auto str = name.GetName();
-		
+
 		auto pos = str.find_last_of(':');
 		if (pos != std::string::npos)
 		{
@@ -945,7 +939,6 @@ bool UE_UPackage::Save(const fs::path& dir)
 		auto pos = packageName.find(c);
 		if (pos != std::string::npos) { packageName[pos] = '_'; }
 	}
-	
 
 	if (Classes.size())
 	{
